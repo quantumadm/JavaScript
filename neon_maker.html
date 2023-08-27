@@ -1,0 +1,180 @@
+﻿プログラム名: neon_maker.html
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title> neonsign maker</title>
+        <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic&family=Dancing+Script&family=Henny+Penny&family=Train+One&family=Monoton&display=swap" rel="stylesheet">
+        <script>
+        let canvas, context; // canvas
+        const neons = new Array(); // neons array 
+        let button = -1.0,ox, oy;// button, offset
+        let index, cnt = 0;// index , selection count
+
+
+// ネオンサインクラス
+class Neon {
+    constructor (text, font, size, style, color1, blinks1, border, w, color2, blinks2) {
+        this.x = canvas.width / 2 ;
+        this.y = canvas.height / 2;
+        this.text = text;
+        this.font = `${style}${size}px ${font}`;
+        this.size = size;
+        this.border = border.concat();
+        this.w = w;
+        this.color = [color1, color2]
+        this.blinks = [blinks1.concat(), blinks2.concat()];
+        //
+        context.font = this.font;
+        const m =context.measureText(text);
+        this.bx=m.actualBoundingBoxLeft;
+        this.by=m.actualBoundingBoxAscent;
+        this.bw=m.width;
+        this.bh=m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
+        this.setBB();
+    } 
+    setBB(){ 
+    
+        this.bb = new Path2D();
+        this.bb.rect(this.x-this.bx-20, this.y-this.by-20, this.bw+40, this.bh+40);
+    }
+    draw (id) {
+    // check onoff
+        let check = true;
+        this.blinks[id]. forEach (blink => {
+            if ((blink == cnt) && (blink != "")) check = false;
+        });
+        if (check) { 
+            // draw neonsign 
+            context.fillStyle = "#FFFFFF";
+            context.font = this.font; 
+            const t = this.size / 100; 
+            context.lineWidth = this.w * 2*t;
+            const [x1,y1] = [this.x-this.bx-25*t,this.y-this.by-25*t]; 
+            const [x2,y2] = [x1+this.bw+50*t,y1+this.bh+50*t]; 
+            for (let i=0; i<7; i++) { 
+                let [c,b,o] = ["#FFFFFF", 10,1.5*t* (i*2-1)];
+                if (i > 1) [c,b,o] = [this.color[id], 15*t*(i-1), 0]; 
+                [context. shadowColor, context. shadowBlur] = [c, b]; 
+                [context.shadowOffsetX, context.shadowOffsetY] = [o,o];
+                if (id == 0){ 
+                    context.fillText (this.text, this.x, this.y);
+                }else{     
+                    if (this.border [0]) this.drawLine (x1,y1, x2, y1);
+                    if (this.border [1]) this.drawLine (x2, y1, x2,y2);
+                    if (this.border [2]) this.drawLine (x2, y2, x1,y2);
+                    if (this.border [3]) this.drawLine (x1,y2, x1,y1);
+                }   //char size / bold /white location i=0, 1:white 2-6 assigned, 白 ボーダー線の座標 iが0、 1のとき白、 2~6のとき指定色 影の色、ぼかし、 位置をセット 文字を描画 ボーダー線 (上、右、下、左)
+            }
+        }
+    }
+    drawLine (x1,y1, x2,y2) {
+        // 線の描画
+        context.beginPath();
+        context.moveTo(x1,y1);
+        context.lineTo(x2, y2); 
+        context.stroke ();
+    }
+}
+
+const init = () => { 
+    // キャンバスの取得 
+    canvas = document.getElementById("signboard"); 
+    context = canvas.getContext ("2d"); 
+    [canvas.width,canvas. height] = [window.innerWidth-20, window.innerHeight-180]; 
+    [context.textAlign, context.textBaseline] = ["center", "middle"]; 
+    [context.strokeStyle, context.lineCap] = ["#FFFFFF", "round"]; 
+    // マウスイベントの登録 
+    canvas.addEventListener("mousedown", selectNeon); 
+    canvas.addEventListener("mousemove", moveNeon); 
+    canvas.addEventListener ("mouseup", () => [button, index] = [-1,-1]); 
+    canvas.addEventListener ("contextmenu", event => event.preventDefault());
+    setInterval (update, 50); //右クリックメニューの表示をキャンセル
+} 
+
+const addNeon = (neonType = "text") => { 
+    // ネオンサインの追加 
+    const text = document.getElementById("text").value; 
+    const font = document.getElementById("font").value; 
+    const size = document.getElementById("size").value; 
+    let style = ""; 
+    if (document.getElementById("italic").checked) style += "italic "; //※3 101行目最後の 「italic」 と102行目最後の 「bold」 の後ろには半角スペースが必要です。
+    if (document.getElementById("bold").checked) style += "bold"; 
+    const bu = document.getElementById("bu").checked; 
+    const br = document.getElementById("br").checked;
+    const bd = document.getElementById("bd").checked;
+    const bl = document.getElementById("bl").checked; 
+    const w = document.getElementById("w").value; 
+    const c1 = document.getElementById("color1").value; 
+    const b1 = document.getElementById("blinks1").value.split(","); 
+    const c2 = document.getElementById("color2").value; 
+    b2 = document.getElementById("blinks2").value.split(","); 
+    neons.push (new Neon (text, font, size, style, c1, b1, [bu, br, bd, bl], w, c2, b2)); //50ミリ秒ごとにupdate() 関数を実行 テキスト､フォント、サイズ (158~166行) の値を取得 ボーダー線の方向 (171行、 172行) の値を取得 ボーダー線の太さ (173行) の値を取得 スタイル (167行) の値を取得 3 文字の色と点滅 (168行、 169行)、 ボーダー線の色と点滅 ( 174行、 175行)を取得 ネオンサインを作成し、 配列neonsに追加
+}
+
+const selectNeon = event => {
+    // ネオンサインの選択、 削除 
+    [button, ox, oy] = [event. button, event. offsetX, event. offsetY];  
+    for (let i=neons.length-1; i>=0; i--) { 
+        if (context. isPointInPath (neons[i].bb, ox, oy)) { 
+            if (button == 0){ 
+                [ox, oy, index] = [neons[i].x-ox, neons[i].y-oy, i]; 
+            } else if (button == 2){ 
+                neons.splice (i, 1); //マウスがネオンサインを囲む矩形内にあるなら 左ボタンならネオンサイン 番号と相対位置をセット 右ボタンならクリックしたネオンサインを削除
+            }
+            break;
+        }
+    }
+}
+
+const moveNeon = event => { // ネオンサインの移動
+    const [x,y] = [event. offsetX, event. offsetY]; 
+    if ((button == 0) && (index > -1)) {
+        [neons[index].x, neons [index].y] = [x+ox,y+oy]; 
+        neons [index].setBB(); //既存のネオンサインの上で左ボタンを押しているなら 指定したネオンサインの座標を変更
+
+    }
+}
+
+const update = () => { 
+    // 描画  
+    context.fillStyle = "#000000";
+    context.fillRect (0, 0, canvas.width, canvas. height); 
+    neons.forEach (neon => { 
+        neon. draw (1); 
+        neon. draw (0) ; 
+    }); 
+    // カウンタの更新 
+    cnt++; 
+    if (cnt == 100) cnt = 0; 
+}
+</script>
+<style>
+input[type="number"] {width: 40px;}
+</style>
+</head>
+<body onload="init()"> 
+    <p> NeonSign Maker</p>
+    TEXT: <input type="text" id="text" value="Neon Sign">
+    <select id="font">
+    <option value="Zen Gothic"> Zen Gothic
+    <option value="Dancing Script"> Dancing Script
+    <option value="Henny Penny"> Henny Penny
+    <option value="Train One">Train One
+    <option value="Monoton"> Monoton
+    </select>
+    <input type="number" id="size" value="100">
+    <input type="checkbox" id="italic">italic <input type="checkbox" id="bold">bold 
+    <input type="color" id="color1" value="#FF3300"> 
+    On/Off: <input type="text" id="blinks1" value="20,22,24,50">
+    <hr>
+    <input type="checkbox" id="bu">up <input type="checkbox" id="br">right 
+    <input type="checkbox" id="bd"> down <input type="checkbox" id="bl"> left
+    bold size: <input type="range" id="w" value="3" min="1" max="5">
+    <input type="color" id="color2" value="#0099FF">
+    blink: <input type="text" id="blinks2" value="0,1,2,3,4,5,6,7,8,9"> 
+    <input type="button" value="create" onclick="addNeon ()">
+<hr>
+<canvas id="signboard"> </canvas>
+</body>
+</html>
