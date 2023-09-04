@@ -148,6 +148,195 @@ const update = () => {
     cnt++; 
     if (cnt == 100) cnt = 0; 
 }
+            '---------------------------------------
+' Fn Tran(originaltext, sFrom, sTo)
+' Fn Tran(OriginalText, Optional sFrom = "auto", Optional sTo = "ko")
+Fn Tran(OriginalText, Optional sFrom = "auto", Optional sTo = "ja")
+
+'② URL
+'strURL = "https://translate.google.com/m?sl=StartingLang&tl=ArrivingLang&q=transtatement"
+strURL = "https://translate.google.com/m?sl=" & sFrom & "&tl=" & sTo & "&q=" & OriginalText & ""
+'
+'③ EncodeURL
+OriginalText = EncodeURL(OriginalText)
+'
+'④ GetHTTP Result URL
+strResult = GetHTTP(strURL)
+'
+'⑤ Splitter <div class="result-container"> ~~~ <div> 
+strResult = splitter(strResult,"<div class=""result-container"">", "</div>")
+'
+'⑥ GoogleTraslate
+GoogleTranslate = strResult
+'
+'⑦ if Error 413 , over 5000 char 
+If InStr(1, strResult, "Error 413") > 0 Then GoogleTranslate = "#Request Too Large!": Exit Function
+
+End Fn xxx
+
+Fn xxxGetHttp(URL, Optional formText As String, _
+Optional isWinHttp As Boolean = False, _
+Optional RequestHeader As Variant, _
+Optional includeMeta As Boolean = False, _
+Optional RequestType As String = "GET", _
+Optional returnInnerHTML As Boolean = True)
+ 
+'###############################################################
+'▶ GetHttp Function
+'▶ data from web
+'▶ argv
+'_____________URL
+'_____________formText : Encoding FormText, add query on Send String
+'_____________isWinHttp : WinHTTP, Redirect = True WinHttp
+'_____________RequestHeader : RequestHeader array
+'_____________includeMeta : TRUE : HTML input ResponseText. Meta HTML innerText False
+'_____________RequestType : "GET"
+'_____________ReturnInnerHTML : TRUE InnerHTML default TRUE
+ 
+'▶ sample
+'Dim HtmlResult As Object
+'Set htmlResult = GetHttp("https://www.naver.com")
+'msgbox htmlResult.body.innerHTML
+'###############################################################
+ 
+Dim oHTMLDoc As Object: Dim objHTTP As Object
+Dim HTMLDoc As Object
+Dim i As Long: Dim blnAgent As Boolean: blnAgent = False
+Dim sUserAgent As String: sUserAgent = "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Mobile Safari/537.36"
+ 
+Application.DisplayAlerts = False
+ 
+If Left(URL, 4) <> "http" Then URL = "http://" & URL
+ 
+Set oHTMLDoc = CreateObject("HtmlFile")
+Set HTMLDoc = CreateObject("HtmlFile")
+ 
+' ' 2023-02-22 | windows authentication connetion error(by version)  changing ServerXMLHTTP -> XMLHTTP 
+' if XMLHTTP request, do not set TimeOut (setting default)
+' https://stackoverflow.com/questions/11605613/differences-between-xmlhttp-and-serverxmlhttp
+On Error GoTo SendError:
+'------------------------------
+If isWinHttp = False Then
+Set objHTTP = CreateObject("MSXML2.ServerXMLHTTP")
+Else
+Set objHTTP = CreateObject("WinHttp.WinHttpRequest.5.1")
+End If
+ 
+objHTTP.setTimeouts 1200000, 1200000, 1200000, 1200000 'wating response 120sec
+ 
+' ' 2023-02-22 | windows authentication connetion error(by version)  changing ServerXMLHTTP -> XMLHTTP 
+SendRestart:
+'------------------------------
+objHTTP.Open RequestType, URL, False
+If Not IsMissing(RequestHeader) Then
+Dim vRequestHeader As Variant
+For Each vRequestHeader In RequestHeader
+Dim uHeader As Long: Dim Lheader As Long: Dim steps As Long
+uHeader = UBound(vRequestHeader): Lheader = LBound(vRequestHeader)
+If (uHeader - Lheader) Mod 2 = 0 Then GetHttp = CVErr(xlValue): Exit Function
+For i = Lheader To uHeader Step 2
+If vRequestHeader(i) = "User-Agent" Then blnAgent = True
+objHTTP.setRequestHeader vRequestHeader(i), vRequestHeader(i + 1)
+Next
+Next
+End If
+If blnAgent = False Then objHTTP.setRequestHeader "User-Agent", sUserAgent
+ 
+objHTTP.send formText
+ 
+If includeMeta = False Then
+With oHTMLDoc
+.Open
+.Write objHTTP.responseText
+.Close
+End With
+Else
+oHTMLDoc.body.innerhtml = objHTTP.responseText
+End If
+ 
+If returnInnerHTML = True Then
+GetHttp = oHTMLDoc.body.innerhtml
+Else
+Set GetHttp = oHTMLDoc
+End If
+Set oHTMLDoc = Nothing
+Set objHTTP = Nothing
+ 
+Application.DisplayAlerts = True
+ 
+' 2023-02-22 | windows authentication connetion error(by version)  changing ServerXMLHTTP -> XMLHTTP 
+Exit Function
+ 
+SendError:
+Set objHTTP = CreateObject("MSXML2.XMLHTTP")
+On Error GoTo 0
+Resume SendRestart:
+'------------------------------
+ 
+End Fnxxx
+ 
+Fn xxxENCODEURL(varText As Variant, Optional blnEncode = True)
+ 
+'###############################################################
+'▶ EncodeURL Function
+'▶ special string to url strings.
+'▶ description for argument 
+'_____________varTest : std URL convert It's str
+'_____________blnEncode : TRUE if true return result
+'▶ Sample
+'s = "http://www.google.com/search=clock"
+'s = ENCODEURL(s)
+'MsgBox s
+'###############################################################
+ 
+Static objHtmlfile As Object
+ 
+If objHtmlfile Is Nothing Then
+Set objHtmlfile = CreateObject("htmlfile")
+With objHtmlfile.parentWindow
+.execScript "Fn xxxencode(s) {return encodeURIComponent(s)}", "jscript"
+End With
+End If
+ 
+If blnEncode Then
+ENCODEURL = objHtmlfile.parentWindow.encode(varText)
+End If
+ 
+End Fnxxx
+ 
+Fn xxxSplitter(v As Variant, Cutter As String, Optional Trimmer As String)
+ 
+'###############################################################
+'▶ Splitter Function
+'▶ Cutter ~ Timmer getter strings. (If Timmer is space Cutter after strings)
+'▶ description for argument 
+'_____________v : It's str
+'_________Cutter : Cutter
+'_________Trimmer : end Cutter(optional)
+'▶ Sample
+'Dim s As String
+'s = "{sa;b132@drama#weekend;aabbcc"
+'s = Splitter(s, "@", "#")
+'msgbox s '--> "drama" return
+'###############################################################
+ 
+Dim vaArr As Variant
+ 
+On Error GoTo EH:
+ 
+vaArr = Split(v, Cutter)(1)
+If Not IsMissing(Trimmer) Then vaArr = Split(vaArr, Trimmer)(0)
+ 
+Splitter = vaArr
+ 
+Exit Function
+ 
+EH:
+Splitter = ""
+ 
+End Fnxxx
+'---------------------------------------
+ 
 </script>
 <style>
 input[type="number"] {width: 40px;}
