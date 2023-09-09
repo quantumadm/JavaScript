@@ -1,0 +1,2 @@
+1. dev tool(<ctrl-shfit-i>) -> console : <esc>
+   document.query('body').style.backgroundColor = 'red';
