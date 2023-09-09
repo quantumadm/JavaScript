@@ -15,3 +15,23 @@ Ctrl + P / Ctrl + Shift + P /
 
 3.Network - O   
 Ctrl + R
+
+<git>
+git log
+git log --oneline
+git log --oneline --all
+git log --oneline --all --graph
+
+working dir
+  A.txt  B.txt  C.txt
+
+  stage area
+    A.txt
+
+  repository area
+    A.txt
+
+git add A.txt         :  working -> stage
+git commit -m "v01"   :  stage -> repository
+
+
