@@ -1,3 +1,11 @@
+
+<MS Edge developer>
+https://learn.microsoft.com/ko-kr/microsoft-edge/developer/
+
+extentions
+https://learn.microsoft.com/ko-kr/microsoft-edge/extensions-chromium/getting-started/part1-simple-extension?tabs=v3
+
+<Web Devlope tool>
 1.console
   dev tool(<ctrl-shfit-i>) -> console : <esc>
    document.querySelector('body').style.backgroundColor="red"
@@ -7,6 +15,3 @@ Ctrl + P / Ctrl + Shift + P /
 
 3.Network - O   
 Ctrl + R
-
-MS Edge developer
-https://learn.microsoft.com/ko-kr/microsoft-edge/developer/
