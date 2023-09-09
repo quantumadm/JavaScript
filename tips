@@ -1,3 +1,8 @@
-1. dev tool(<ctrl-shfit-i>) -> console : <esc>
+1.console
+  dev tool(<ctrl-shfit-i>) -> console : <esc>
    document.querySelector('body').style.backgroundColor="red"
    cosole.log(document.querySelector('body').style.backgroundColor)
+2.Source -> Page
+Ctrl + P / Ctrl + Shift + P / 
+
+3.Network - O
