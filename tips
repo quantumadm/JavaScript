@@ -16,6 +16,11 @@ Ctrl + P / Ctrl + Shift + P /
 3.Network - O   
 Ctrl + R
 
+console.log()
+console.count()
+console.count("func")
+console.countReset("func")
+
 <git>
 git log
 git log --oneline
@@ -33,5 +38,11 @@ working dir
 
 git add A.txt         :  working -> stage
 git commit -m "v01"   :  stage -> repository
+
+
+<vs code>
+Ctrl click move def
+Menu - Go - Back shotkey
+Peak definition
 
 
