@@ -1,2 +1,2 @@
 1. dev tool(<ctrl-shfit-i>) -> console : <esc>
-   document.querySelector('body').style.bacgroundColor="red"
+   document.querySelector('body').style.backgroundColor="red"
