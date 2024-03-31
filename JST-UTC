@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Current time to JST-UTC</title>
+</head>
+<body>
+    <h1>JST</h1>
+    <p id="currentTime"></p>
+
+    <h1>UTC</h1>
+    <p id="estresult"></p>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const currentTimeString = `${hours}:${minutes}:${seconds}`;
+            document.getElementById('currentTime').textContent = `${currentTimeString}`;
+        }
+        function convertTime() {
+           const now = new Date();
+           const hours = String(now.getHours()).padStart(2, '0');
+           const minutes = String(now.getMinutes()).padStart(2, '0');
+           const seconds = String(now.getSeconds()).padStart(2, '0');
+           const currentTimeString = `${hours}:${minutes}:${seconds}`;
+           const localTimeInput = currentTimeString;
+           const localTime = new Date(`2000-01-01T${localTimeInput}`);
+           const utcTime = localTime.toISOString().substr(11, 8);
+           document.getElementById("estresult").textContent = `${utcTime}`; 
+
+           const utcxTime = localTime.toISOString().substr(0, 19);
+           document.getElementById("gstresult").textContent = `${utcxTime}`;
+
+        }
+        // update 1second
+        setInterval(updateTime, 1000);
+        setInterval(convertTime, 1000);
+    </script>
+</body>
+</html>
